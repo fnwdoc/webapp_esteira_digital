@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNW - Planejador de Esteira </title>
+    <!-- Carrega o Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonte Inter --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ícones (para botões de salvar/carregar) --><script src="https://unpkg.com/lucide@0.292.0/dist/umd/lucide.min.js"></script>
+    
+    <style>
+        /* Estilos personalizados */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: darkblue; /* bg-gray-900 */
+        }
+        
+        /* Estilo para o modal (escondido por padrão) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo escuro semi-transparente */
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Animação de fade-in para o modal */
+        .modal-content {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Estilo da linha do tempo */
+        .timeline-line {
+            position: absolute;
+            top: 20px; /* Alinha com o centro do "ponto" */
+            left: 12.5%; /* Começa no meio do primeiro item */
+            width: 75%; /* Vai até o meio do último item */
+            height: 4px;
+            background-color: #4f46e5; /* bg-indigo-600 */
+            z-index: 1;
+        }
+
+        /* Estilo do "ponto" da linha do tempo */
+        .timeline-point {
+            position: relative;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            background-color: #818cf8; /* bg-indigo-400 */
+            border: 4px solid #4f46e5; /* bg-indigo-600 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #111827; /* bg-gray-900 */
+        }
+        
+        /* Estilo para os cards de produto */
+        .product-card {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2), 0 4px 6px -2px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* Custom icon style */
+        .icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2.5px;
+            margin-right: 8px;
+        }
+
+        /* Logo positioning */
+        .logo-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+        }
+
+        .logo-container img {
+            height: 50px; /* Ajuste conforme necessário */
+            width: auto;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .logo-container {
+                left: 50%;
+                transform: translateX(-50%); /* Centra no desktop */
+            }
+        }
+    </style>
+</head>
+<body class="text-white p-4 md:p-10">
+
+    <div class="max-w-7xl mx-auto relative">
+        <!-- Logo FNW --><div class="logo-container hidden md:block" style="left: 20px; top: 20px; transform: none;">
+            <a href="https://freenatstore.com.br" target="_blank">
+                <img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/67d0fd43833ed_FNWfreenatstoreLogodownload.jpg" alt="FNW Logo" class="h-12 w-auto">
+            </a>
+        </div>
+        <div class="logo-container md:hidden" style="left: 20px; top: 20px; transform: none;">
+            <a href="https://freenatstore.com.br" target="_blank">
+                <img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/67d0fd43833ed_FNWfreenatstoreLogodownload.jpg" alt="FNW Logo" class="h-10 w-auto">
+            </a>
+        </div>
+
+
+        <!-- Cabeçalho --><header class="text-center mb-10 mt-16 md:mt-0">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">Planejador de Esteira FNW</h1>
+            <p class="text-lg text-gray-300 mt-2">Mapeamento de Produtos</p>
+        </header>
+
+        <!-- NOVO: Campo Nome do Cliente -->
+        <section class="mb-10 max-w-lg mx-auto">
+            <label for="client-name" class="block text-sm font-medium text-gray-300 mb-1">Nome do Cliente</label>
+            <input type="text" id="client-name" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Digite o nome do cliente">
+            <p class="text-xs text-gray-400 mt-1">O nome será usado como sufixo ao exportar o JSON.</p>
+        </section>
+
+        <!-- Seção 1: Controles --><section class="mb-10">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                <button id="openCadastroModal" class="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                    <i data-lucide="plus" class="icon"></i>
+                    Cadastrar Produto
+                </button>
+                
+                <button id="export-json" class="w-full md:w-auto flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                     <i data-lucide="download" class="icon"></i>
+                    Exportar JSON
+                </button>
+                
+                <label class="w-full md:w-auto flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 cursor-pointer">
+                     <i data-lucide="upload" class="icon"></i>
+                    Importar JSON
+                    <input type="file" id="import-json" class="hidden" accept=".json">
+                </label>
+            </div>
+        </section>
+
+        <!-- Seção 2: Esteira de Produtos (Timeline) --><section>
+            <h2 class="text-2xl font-semibold text-gray-100 mb-12 text-center">Esteira de Produtos FNW</h2>
+            
+            <div class="relative">
+                <!-- A Linha da Timeline --><div class="timeline-line hidden md:block"></div>
+
+                <!-- Container dos Estágios --><div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-12">
+                    
+                    <!-- Estágio LTi --><div class="flex flex-col items-center">
+                        <div class="timeline-point">LTi</div>
+                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">Low Ticket</h3>
+                        <p class="text-xs text-gray-400 text-center mb-4">(&lt; R$ 500)</p>
+                        <div id="lti-container" class="w-full space-y-3 min-h-[100px]">
+                            <!-- Cards de produto LTi aqui --></div>
+                    </div>
+
+                    <!-- Estágio MTi --><div class="flex flex-col items-center">
+                        <div class="timeline-point">MTi</div>
+                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">Mid Ticket</h3>
+                        <p class="text-xs text-gray-400 text-center mb-4">(R$ 500 - R$ 3.000)</p>
+                        <div id="mti-container" class="w-full space-y-3 min-h-[100px]">
+                            <!-- Cards de produto MTi aqui --></div>
+                    </div>
+
+                    <!-- Estágio HTi --><div class="flex flex-col items-center">
+                        <div class="timeline-point">HTi</div>
+                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">High Ticket</h3>
+                        <p class="text-xs text-gray-400 text-center mb-4">(R$ 3.000 - R$ 25.000)</p>
+                        <div id="hti-container" class="w-full space-y-3 min-h-[100px]">
+                            <!-- Cards de produto HTi aqui --></div>
+                    </div>
+
+                    <!-- Estágio DUN --><div class="flex flex-col items-center">
+                        <div class="timeline-point">DUN</div>
+                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">DUN</h3>
+                        <p class="text-xs text-gray-400 text-center mb-4">(&gt; R$ 25.000)</p>
+                        <div id="dun-container" class="w-full space-y-3 min-h-[100px]">
+                            <!-- Cards de produto DUN aqui --></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </div> <!-- Fim do Max-width container -->
+
+    <!-- Modal: Cadastrar Produto --><div id="cadastroModal" class="modal">
+        <div class="modal-content bg-gray-800 w-full max-w-lg p-6 rounded-lg shadow-2xl border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Cadastrar Novo Produto</h3>
+                <button class="close-modal text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <form id="cadastro-form">
+                <div class="mb-4">
+                    <label for="produto-titulo" class="block text-sm font-medium text-gray-300 mb-1">Título do Produto</label>
+                    <input type="text" id="produto-titulo" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="produto-preco" class="block text-sm font-medium text-gray-300 mb-1">Preço Sugerido (R$)</label>
+                    <input type="number" id="produto-preco" min="0" step="0.01" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: 497.00" required>
+                     <p class="text-xs text-gray-400 mt-1">O sistema irá posicionar o produto automaticamente com base no preço.</p>
+                </div>
+                <div class="mb-6">
+                    <label for="produto-desc" class="block text-sm font-medium text-gray-300 mb-1">Descrição Breve</label>
+                    <textarea id="produto-desc" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Encontros quinzenais em grupo com os sócios..."></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="close-modal bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg mr-3 transition duration-200">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                        Salvar Produto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal: Detalhes do Produto (para navegação) --><div id="detalheModal" class="modal">
+        <div class="modal-content bg-gray-800 w-full max-w-lg p-6 rounded-lg shadow-2xl border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="detalhe-stage" class="text-xl font-semibold text-indigo-400">Detalhe do Produto</h3>
+                <button class="close-modal text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <!-- Conteúdo do Detalhe --><div class="min-h-[150px]">
+                <h2 id="detalhe-titulo" class="text-2xl font-bold text-white mb-2"></h2>
+                <p id="detalhe-preco" class="text-lg font-semibold text-indigo-300 mb-4"></p>
+                <p id="detalhe-desc" class="text-gray-300"></p>
+            </div>
+
+            <!-- Navegação do Modal (Timeline) --><div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-700">
+                <button id="nav-prev" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    &larr; Anterior
+                </button>
+                <span id="nav-counter" class="text-sm text-gray-400"></span>
+                <button id="nav-next" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Próximo &rarr;
+                </button>
+            </div>
+
+            <!-- Ações (Mover / Deletar) --><div class="mt-6 pt-4 border-t border-gray-700">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Mover produto para:</label>
+                <div id="detalhe-move-buttons" class="grid grid-cols-2 gap-3 mb-4">
+                    <button data-stage="lti" class="move-btn-modal text-sm bg-green-600 hover:bg-green-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">LTi</button>
+                    <button data-stage="mti" class="move-btn-modal text-sm bg-blue-600 hover:bg-blue-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">MTi</button>
+                    <button data-stage="hti" class="move-btn-modal text-sm bg-purple-600 hover:bg-purple-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">HTi</button>
+                    <button data-stage="dun" class="move-btn-modal text-sm bg-red-600 hover:bg-red-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">DUN</button>
+                </div>
+                
+                <button id="detalhe-delete-btn" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    Deletar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Estado da Aplicação ---
+            let state = {
+                clientName: "Digite o cliente", // Nome do cliente
+                produtos: {
+                    lti: [
+                        { id: 1, titulo: 'Comunidade (Exemplo)', desc: 'Acesso à comunidade e aulas semanais.', preco: 497 }
+                    ],
+                    mti: [
+                        { id: 2, titulo: 'Curso Gravado (Exemplo)', desc: 'Curso completo gravado com método.', preco: 1997 }
+                    ],
+                    hti: [
+                        { id: 3, titulo: 'Mentoria em Grupo (Exemplo)', desc: 'Encontros quinzenais com sócios.', preco: 15000 }
+                    ],
+                    dun: []
+                },
+                modal: {
+                    current: null, // 'cadastro', 'detalhe'
+                    data: {} // { id, stage, index }
+                }
+            };
+
+            // --- Seletores de DOM ---
+            const cadastroModal = document.getElementById('cadastroModal');
+            const detalheModal = document.getElementById('detalheModal');
+            const openCadastroModalBtn = document.getElementById('openCadastroModal');
+            const closeButtons = document.querySelectorAll('.close-modal');
+            const cadastroForm = document.getElementById('cadastro-form');
+            const exportBtn = document.getElementById('export-json');
+            const importInput = document.getElementById('import-json');
+            const clientNameInput = document.getElementById('client-name'); // NOVO
+
+            // --- Funções de Renderização ---
+
+            /** Renderiza os cards de produto na Esteira (Timeline) */
+            function renderEsteira() {
+                // Limpa todos os containers
+                ['lti', 'mti', 'hti', 'dun'].forEach(stage => {
+                    const container = document.getElementById(`${stage}-container`);
+                    container.innerHTML = '';
+                    
+                    if (state.produtos[stage].length === 0) {
+                         container.innerHTML = `<p class="text-gray-600 italic text-sm text-center mt-4">Vazio</p>`;
+                    }
+                    
+                    // Adiciona cards
+                    state.produtos[stage].forEach((item, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 hover:border-indigo-500';
+                        card.setAttribute('data-stage', stage);
+                        card.setAttribute('data-index', index);
+                        card.setAttribute('data-id', item.id);
+                        card.innerHTML = `
+                            <h4 class="font-semibold text-white text-sm truncate">${item.titulo}</h4>
+                            <p class="text-xs text-indigo-300 font-medium mt-1">R$ ${Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        `;
+                        container.appendChild(card);
+                    });
+                });
+            }
+
+            /** Renderiza tudo */
+            function renderAll() {
+                renderEsteira();
+            }
+
+            // --- Funções de Posicionamento ---
+            
+            /** Decide em qual esteira o produto entra com base no preço */
+            function autoPosicionar(item) {
+                const preco = Number(item.preco);
+                if (preco < 500) {
+                    state.produtos.lti.push(item);
+                } else if (preco < 3000) {
+                    state.produtos.mti.push(item);
+                } else if (preco < 25000) {
+                    state.produtos.hti.push(item);
+                } else {
+                    state.produtos.dun.push(item);
+                }
+            }
+            
+            /** Move um item de uma esteira para outra */
+            function moverProduto(newStage) {
+                const { id, stage: oldStage } = state.modal.data;
+                
+                // Encontra o item
+                const itemIndex = state.produtos[oldStage].findIndex(item => item.id === id);
+                if (itemIndex > -1) {
+                    // Remove do array antigo
+                    const [itemMovido] = state.produtos[oldStage].splice(itemIndex, 1);
+                    
+                    // Adiciona ao novo array
+                    state.produtos[newStage].push(itemMovido);
+                    
+                    renderEsteira();
+                    closeModal();
+                }
+            }
+            
+             /** Deleta um item */
+            function deletarProduto() {
+                const { id, stage } = state.modal.data;
+                 // Encontra o item
+                const itemIndex = state.produtos[stage].findIndex(item => item.id === id);
+                if (itemIndex > -1) {
+                    state.produtos[stage].splice(itemIndex, 1);
+                    renderEsteira();
+                    closeModal();
+                }
+            }
+
+            // --- Funções de Modal ---
+
+            function openModal(modalId) {
+                if (modalId === 'cadastro') {
+                    state.modal.current = 'cadastro';
+                    cadastroModal.style.display = 'flex';
+                } else if (modalId === 'detalhe') {
+                    state.modal.current = 'detalhe';
+                    updateDetalheModal();
+                    detalheModal.style.display = 'flex';
+                }
+            }
+
+            function closeModal() {
+                state.modal.current = null;
+                state.modal.data = {};
+                cadastroModal.style.display = 'none';
+                detalheModal.style.display = 'none';
+                cadastroForm.reset();
+            }
+            
+            /** Atualiza o conteúdo do modal de detalhe com base no state.modal.data */
+            function updateDetalheModal() {
+                const { stage, index } = state.modal.data;
+                const produto = state.produtos[stage][index];
+                
+                if (!produto) {
+                    closeModal();
+                    return;
+                }
+                
+                // Atualiza ID no state para mover/deletar
+                state.modal.data.id = produto.id;
+
+                document.getElementById('detalhe-stage').textContent = `Produto ${stage.toUpperCase()}`;
+                document.getElementById('detalhe-titulo').textContent = produto.titulo;
+                document.getElementById('detalhe-preco').textContent = `R$ ${Number(produto.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                document.getElementById('detalhe-desc').textContent = produto.desc;
+                
+                // Navegação
+                const total = state.produtos[stage].length;
+                document.getElementById('nav-counter').textContent = `${index + 1} / ${total}`;
+                document.getElementById('nav-prev').disabled = (index === 0);
+                document.getElementById('nav-next').disabled = (index === total - 1);
+                
+                // Botões de Mover
+                document.querySelectorAll('.move-btn-modal').forEach(btn => {
+                    btn.disabled = (btn.dataset.stage === stage);
+                });
+            }
+
+            // --- Handlers de Eventos ---
+
+            /** Abre modal de cadastro */
+            openCadastroModalBtn.addEventListener('click', () => openModal('cadastro'));
+
+            /** Fecha modais */
+            closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
+            window.addEventListener('click', (e) => {
+                if (e.target === cadastroModal || e.target === detalheModal) {
+                    closeModal();
+                }
+            });
+
+            /** Salva novo produto */
+            cadastroForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const titulo = document.getElementById('produto-titulo').value;
+                const desc = document.getElementById('produto-desc').value;
+                const preco = document.getElementById('produto-preco').value;
+                
+                const novoItem = {
+                    id: Date.now(), // ID único simples
+                    titulo,
+                    desc,
+                    preco: parseFloat(preco)
+                };
+                
+                autoPosicionar(novoItem);
+                renderEsteira();
+                closeModal();
+            });
+
+            /** Delegação de eventos para abrir "Detalhe" do Produto */
+            document.body.addEventListener('click', (e) => {
+                const card = e.target.closest('.product-card');
+                if (card) {
+                    const stage = card.dataset.stage;
+                    const index = parseInt(card.dataset.index);
+                    
+                    state.modal.data = { stage, index };
+                    openModal('detalhe');
+                }
+            });
+            
+            /** Handlers da navegação do modal de detalhe */
+            document.getElementById('nav-prev').addEventListener('click', () => {
+                if (state.modal.data.index > 0) {
+                    state.modal.data.index--;
+                    updateDetalheModal();
+                }
+            });
+            
+            document.getElementById('nav-next').addEventListener('click', () => {
+                const { stage, index } = state.modal.data;
+                if (index < state.produtos[stage].length - 1) {
+                    state.modal.data.index++;
+                    updateDetalheModal();
+                }
+            });
+            
+            /** Handlers de mover e deletar no modal de detalhe */
+            document.getElementById('detalhe-move-buttons').addEventListener('click', (e) => {
+                if (e.target.classList.contains('move-btn-modal')) {
+                    const newStage = e.target.dataset.stage;
+                    moverProduto(newStage);
+                }
+            });
+            
+            document.getElementById('detalhe-delete-btn').addEventListener('click', deletarProduto);
+
+            // NOVO: Atualiza o nome do cliente no state
+            clientNameInput.addEventListener('input', (e) => {
+                state.clientName = e.target.value;
+            });
+
+            // --- Funções de Import/Export ---
+            
+            /** Exporta o state.produtos para JSON */
+            function exportJSON() {
+                // Formata o nome do cliente para ser seguro para arquivos
+                const saneClientName = state.clientName
+                    .trim()
+                    .replace(/\s+/g, '-') // troca espaços por hífens
+                    .replace(/[^a-zA-Z0-9-]/g, ''); // remove caracteres especiais
+
+                const defaultFilename = `esteira-${saneClientName || 'cliente'}.json`;
+
+                const filename = prompt("Salvar como:", defaultFilename);
+                if (!filename) return;
+
+                // Cria um objeto de exportação que inclui o nome do cliente e os produtos
+                const exportData = {
+                    clientName: state.clientName,
+                    produtos: state.produtos
+                };
+
+                const data = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename.endsWith('.json') ? filename : `${filename}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            }
+            
+            /** Importa um JSON e atualiza o state.produtos */
+            function importJSON(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedState = JSON.parse(e.target.result);
+                        
+                        // Validação: Checa se é o novo formato (com clientName e produtos)
+                        if (importedState.produtos && importedState.produtos.lti) {
+                            state.produtos = importedState.produtos;
+                            state.clientName = importedState.clientName || "Cliente Importado";
+                            clientNameInput.value = state.clientName; // Atualiza o input
+                            renderAll();
+                        } 
+                        // Validação: Checa se é o formato antigo (só produtos)
+                        else if (importedState.lti && importedState.mti) {
+                            state.produtos = importedState; // Carrega só produtos
+                            state.clientName = "Cliente (Formato Antigo)"; // Seta um default
+                            clientNameInput.value = state.clientName; // Atualiza o input
+                            renderAll();
+                        } else {
+                            console.error("Erro: Arquivo JSON inválido. Estrutura não reconhecida.");
+                            // Idealmente, mostraríamos um erro na UI
+                        }
+                    } catch (err) {
+                        console.error("Erro ao processar arquivo JSON:", err);
+                        // Idealmente, mostraríamos um erro na UI
+                    }
+                };
+                reader.readAsText(file);
+                // Reseta o input para permitir carregar o mesmo arquivo novamente
+                event.target.value = null;
+            }
+            
+            exportBtn.addEventListener('click', exportJSON);
+            importInput.addEventListener('change', importJSON);
+
+            // --- Inicialização ---
+            clientNameInput.value = state.clientName; // NOVO: Seta o valor inicial
+            renderAll();
+            lucide.createIcons(); // Ativa os ícones
+        });
+    </script>
+</body>
+</html>
