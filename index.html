@@ -417,6 +417,9 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SortableJS via CDN for Drag-and-Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
     
     <!-- INÍCIO: App JS Customizado (incorporado) -->
     <script>
@@ -463,7 +466,7 @@
                 // Cria e insere o card de cada produto na coluna correta
                 products.forEach(product => {
                     const productCard = createProductCard(product);
-                    const columnId = getColumnForPrice(product.price);
+                    const columnId = product.columnId || getColumnForPrice(product.price);
                     document.getElementById(columnId).appendChild(productCard);
                 });
 
@@ -541,6 +544,7 @@
                     product.title = title;
                     product.price = price;
                     product.description = description;
+                    product.columnId = getColumnForPrice(price); // Atualiza a coluna ao editar
                     // Só permite marcar como Mapa do Tesouro se for LTi
                     product.isMapaTesouro = (getColumnForPrice(price) === 'lti-list') ? isMapaTesouro : false;
                 } else {
@@ -550,6 +554,7 @@
                         title,
                         price,
                         description,
+                        columnId: getColumnForPrice(price), // Adiciona a coluna inicial
                         // Só permite marcar como Mapa do Tesouro se for LTi
                         isMapaTesouro: (getColumnForPrice(price) === 'lti-list') ? isMapaTesouro : false,
                         proximaVendaId: null // Melhoria Pilar 2: Inicia sem conexão
@@ -678,6 +683,34 @@
                 }
             }
 
+
+            /**
+             * Inicializa a funcionalidade de arrastar e soltar (Drag-and-Drop) em todas as colunas.
+             */
+            function initializeSortable() {
+                const lists = document.querySelectorAll('.product-list');
+                lists.forEach(list => {
+                    new Sortable(list, {
+                        group: 'products', // Permite arrastar entre listas do mesmo grupo
+                        animation: 150,
+                        ghostClass: 'blue-background-class', // Classe CSS para o "fantasma"
+                        onEnd: (evt) => {
+                            const itemEl = evt.item; // O card que foi movido
+                            const toListId = evt.to.id; // A ID da lista de destino
+                            const productId = itemEl.dataset.id;
+
+                            const product = products.find(p => p.id === productId);
+                            if (product) {
+                                // Atualiza o estado interno do produto com a nova coluna
+                                product.columnId = toListId;
+                                // Não é necessário chamar renderApp() aqui, a biblioteca cuida da UI.
+                                // Mas se houver lógica de estado complexa, pode ser necessário.
+                            }
+                        }
+                    });
+                });
+            }
+
             // --- Funções Auxiliares ---
 
             /**
@@ -723,6 +756,12 @@
                     try {
                         const data = JSON.parse(e.target.result);
                         if (data.products && Array.isArray(data.products)) {
+                            // Adiciona compatibilidade para mapas antigos sem columnId
+                            data.products.forEach(p => {
+                                if (!p.columnId) {
+                                    p.columnId = getColumnForPrice(p.price);
+                                }
+                            });
                             products = data.products;
                             clientNameInput.value = data.clientName || '';
                             renderApp();
@@ -789,6 +828,7 @@
 
             // Renderização inicial
             renderApp();
+            initializeSortable(); // Ativa o Drag-and-Drop
         });
     </script>
     <!-- FIM: App JS Customizado -->
