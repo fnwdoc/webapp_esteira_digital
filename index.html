@@ -546,7 +546,7 @@
                 } else {
                     // Criando um novo produto
                     const newProduct = {
-                        id: fnw_${Date.now()}, // ID único
+                        id: `fnw_${Date.now()}`, // ID único
                         title,
                         price,
                         description,
@@ -621,7 +621,7 @@
 
                 // Preenche os detalhes básicos
                 document.getElementById('detailTitle').textContent = product.title;
-                document.getElementById('detailPrice').textContent = R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })};
+                document.getElementById('detailPrice').textContent = `R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 document.getElementById('detailDescription').textContent = product.description;
 
                 // Melhoria Pilar 2: Popula o Dropdown de "Próxima Venda"
@@ -630,7 +630,7 @@
                     if (p.id !== product.id) { // Não pode linkar para si mesmo
                         const option = document.createElement('option');
                         option.value = p.id;
-                        option.textContent = ${p.title} (R$ ${p.price});
+                        option.textContent = `${p.title} (R$ ${p.price})`;
                         if (p.id === product.proximaVendaId) {
                             option.selected = true; // Marca a conexão existente
                         }
@@ -705,7 +705,7 @@
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", mapa_previsibilidade_${clientName}.json);
+                downloadAnchorNode.setAttribute("download", `mapa_previsibilidade_${clientName}.json`);
                 document.body.appendChild(downloadAnchorNode); // Necessário para Firefox
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
