@@ -3,592 +3,794 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FNW - Planejador de Esteira </title>
-    <!-- Carrega o Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonte Inter --><link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Ícones (para botões de salvar/carregar) --><script src="https://unpkg.com/lucide@0.292.0/dist/umd/lucide.min.js"></script>
+    <!-- O título agora reflete o "ganho" (previsibilidade) -->
+    <title>Construtor de Receita Previsível FNW</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
+    <!-- INÍCIO: CSS Customizado (incorporado) -->
     <style>
-        /* Estilos personalizados */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #131340; /* bg-gray-900 */
-        }
-        
-        /* Estilo para o modal (escondido por padrão) */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 50;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6); /* Fundo escuro semi-transparente */
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Animação de fade-in para o modal */
-        .modal-content {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            background-color: #f8f9fa;
+            /* Fonte Inter para uma aparência mais moderna */
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
-        /* Estilo da linha do tempo */
-        .timeline-line {
-            position: absolute;
-            top: 20px; /* Alinha com o centro do "ponto" */
-            left: 12.5%; /* Começa no meio do primeiro item */
-            width: 75%; /* Vai até o meio do último item */
-            height: 4px;
-            background-color: #4f46e5; /* bg-indigo-600 */
-            z-index: 1;
+        .navbar-brand img {
+            max-height: 40px;
         }
 
-        /* Estilo do "ponto" da linha do tempo */
-        .timeline-point {
-            position: relative;
-            z-index: 10;
-            width: 40px;
-            height: 40px;
-            background-color: #818cf8; /* bg-indigo-400 */
-            border: 4px solid #4f46e5; /* bg-indigo-600 */
-            border-radius: 50%;
+        /* Melhoria: Dashboard de Controle */
+        .dashboard-control {
+            background-color: #ffffff;
+            border: none;
+        }
+        .status-caotico {
+            background-color: #dc3545;
+            color: white;
+            font-size: 1rem;
+            padding: 0.5em 1em;
+            border-radius: 0.375rem;
+        }
+        .status-construindo {
+            background-color: #ffc107;
+            color: #333;
+            font-size: 1rem;
+            padding: 0.5em 1em;
+            border-radius: 0.375rem;
+        }
+        .status-previsivel {
+            background-color: #198754;
+            color: white;
+            font-size: 1rem;
+            padding: 0.5em 1em;
+            border-radius: 0.375rem;
+        }
+        .dashboard-control h4 {
+            margin-bottom: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+        /* Melhoria: Visual da Jornada */
+        .arrow-icon {
+            font-size: 3rem;
+            color: #adb5bd;
+            font-weight: 200; /* Seta mais leve */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            color: #111827; /* bg-gray-900 */
+            align-self: flex-start;
+            margin-top: 100px; /* Alinha com os cards */
         }
-        
-        /* Estilo para os cards de produto */
+
+        .product-column {
+            background-color: #f1f3f5; /* Tom de cinza mais leve */
+            border-radius: 12px; /* Mais arredondado */
+            padding: 16px;
+            min-height: 400px;
+            height: 100%;
+        }
+
+        .column-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .column-header h4 {
+            font-weight: 600; /* Um pouco menos "pesado" que bold */
+        }
+        .column-header i {
+            font-size: 0.9rem;
+            color: #0d6efd;
+            cursor: help;
+        }
+
+        /* Card do Produto */
         .product-card {
-            transition: all 0.2s ease-in-out;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-left: 5px solid #0d6efd; /* Cor padrão */
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px; /* Mais arredondado */
             cursor: pointer;
+            transition: all 0.2s ease-in-out;
         }
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2), 0 4px 6px -2px rgba(79, 70, 229, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra mais suave */
         }
-        
-        /* Custom icon style */
-        .icon {
-            width: 16px;
-            height: 16px;
-            stroke-width: 2.5px;
-            margin-right: 8px;
+        .product-card h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #212529;
         }
-
-        /* Logo positioning */
-        .logo-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 20;
+        .product-card .price {
+            font-weight: 600;
+            color: #198754;
+            font-size: 1.1rem;
         }
 
-        .logo-container img {
-            height: 50px; /* Ajuste conforme necessário */
-            width: auto;
+        /* Melhoria: Destaque "Mapa do Tesouro" */
+        .product-card.mapa-tesouro {
+            border-left: 5px solid #ffc107; /* Borda dourada */
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+            background: #fffbeb;
         }
-        @media (min-width: 768px) { /* md breakpoint */
-            .logo-container {
-                left: 50%;
-                transform: translateX(-50%); /* Centra no desktop */
+        .product-card .mapa-tesouro-badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #a67c00;
+        }
+
+        /* Melhoria: Info "Próxima Venda" */
+        .proxima-venda-info {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #6c757d;
+            border-top: 1px dashed #e0e0e0;
+            padding-top: 8px;
+        }
+        .proxima-venda-info strong {
+            color: #343a40;
+        }
+
+        /* Responsividade: Scroll horizontal em desktop */
+        .jornada-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 1.5rem; /* Espaço para a barra de scroll */
+        }
+        .product-column-wrapper {
+            flex: 0 0 auto;
+            width: 300px; /* Largura fixa para cada coluna */
+            margin-right: 15px;
+        }
+        .arrow-icon-wrapper {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-right: 15px;
+        }
+         /* Responsividade: Quebra de linha em mobile */
+         @media (max-width: 767.98px) {
+            .dashboard-control .col-md-4 {
+                margin-bottom: 15px;
+            }
+             .arrow-icon {
+                transform: rotate(90deg); /* Vira a seta para baixo */
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+            .jornada-container {
+                flex-wrap: wrap; /* Quebra as colunas em vez de scrollar */
+                overflow-x: hidden;
+            }
+            .product-column-wrapper {
+                width: 100%; /* Coluna ocupa 100% da largura */
+                margin-right: 0;
+            }
+             .arrow-icon-wrapper {
+                width: 100%;
+                padding-right: 0;
             }
         }
     </style>
+    <!-- FIM: CSS Customizado -->
 </head>
-<body class="text-white p-4 md:p-10">
+<body>
 
-    <div class="max-w-7xl mx-auto relative">
-        <!-- Logo FNW --><div class="logo-container hidden md:block" style="left: 20px; top: 20px; transform: none;">
-            <a href="https://freenatstore.com.br" target="_blank">
-                <img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/67d0fd43833ed_FNWfreenatstoreLogodownload.jpg" alt="FNW Logo" class="h-12 w-auto">
+    <nav class="navbar navbar-light bg-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/67d0fd43833ed_FNWfreenatstoreLogodownload.jpg" alt="Logo FNW" height="40">
             </a>
         </div>
-        <div class="logo-container md:hidden" style="left: 20px; top: 20px; transform: none;">
-            <a href="https://freenatstore.com.br" target="_blank">
-                <img src="https://d1yei2z3i6k35z.cloudfront.net/3119789/67d0fd43833ed_FNWfreenatstoreLogodownload.jpg" alt="FNW Logo" class="h-10 w-auto">
-            </a>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Títulos focados na dor e ganho -->
+        <div class="text-center">
+            <h1>Construtor de Receita Previsível FNW</h1>
+            <p class="lead">O Fim da Receita Inconstante: Desenhe sua Jornada de LTV.</p>
         </div>
 
+        <!-- INÍCIO: Dashboard de Controle (Melhoria) -->
+        <div class="dashboard-control card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center text-center gy-3 gy-md-0">
+                    <div class="col-md-4">
+                        <h5>Status da Previsibilidade</h5>
+                        <span id="status-previsibilidade" class="badge status-caotico">Caótico</span>
+                    </div>
+                    <div class="col-md-4">
+                        <h4><strong id="contador-produtos">0</strong></h4>
+                        <small>Produtos Mapeados</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h4><strong id="contador-conexoes">0</strong></h4>
+                        <small>Conexões de Próxima Venda</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- FIM: Dashboard de Controle -->
 
-        <!-- Cabeçalho --><header class="text-center mb-10 mt-16 md:mt-0">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">Planejador de Esteira FNW</h1>
-            <p class="text-lg text-gray-300 mt-2">Mapeamento de Produtos</p>
-        </header>
-
-        <!-- NOVO: Campo Nome do Cliente -->
-        <section class="mb-10 max-w-lg mx-auto">
-            <label for="client-name" class="block text-sm font-medium text-gray-300 mb-1">Nome do Cliente</label>
-            <input type="text" id="client-name" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Digite o nome do cliente">
-            <p class="text-xs text-gray-400 mt-1">O nome será usado como sufixo ao exportar o JSON.</p>
-        </section>
-
-        <!-- Seção 1: Controles --><section class="mb-10">
-            <div class="flex flex-col md:flex-row justify-center items-center gap-4">
-                <button id="openCadastroModal" class="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                    <i data-lucide="plus" class="icon"></i>
-                    Cadastrar Produto
+        <!-- Controles principais (Nome e Botões) -->
+        <div class="row mb-3 gy-2 gy-md-0">
+            <div class="col-md-4">
+                <label for="clientName" class="form-label">Nome do Cliente/Projeto</label>
+                <input type="text" class="form-control" id="clientName" placeholder="Ex: Meu Negócio Digital">
+            </div>
+            <div class="col-md-8 d-flex align-items-end justify-content-start justify-content-md-end flex-wrap gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#productModal">
+                    <i class="bi bi-plus-circle"></i> Cadastrar Produto
                 </button>
-                
-                <button id="export-json" class="w-full md:w-auto flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                     <i data-lucide="download" class="icon"></i>
-                    Exportar JSON
+                <!-- Texto do botão focado no resultado -->
+                <button class="btn btn-primary" id="btn-exportar">
+                    <i class="bi bi-download"></i> Salvar Mapa
                 </button>
-                
-                <label class="w-full md:w-auto flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 cursor-pointer">
-                     <i data-lucide="upload" class="icon"></i>
-                    Importar JSON
-                    <input type="file" id="import-json" class="hidden" accept=".json">
+                <label for="import-json" class="btn btn-outline-primary mb-0">
+                    <i class="bi bi-upload"></i> Carregar Mapa
                 </label>
+                <input type="file" id="import-json" class="d-none" accept=".json">
             </div>
-        </section>
+        </div>
 
-        <!-- Seção 2: Esteira de Produtos (Timeline) --><section>
-            <h2 class="text-2xl font-semibold text-gray-100 mb-12 text-center">Esteira de Produtos FNW</h2>
-            
-            <div class="relative">
-                <!-- A Linha da Timeline --><div class="timeline-line hidden md:block"></div>
+        <hr>
 
-                <!-- Container dos Estágios --><div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-12">
+        <!-- INÍCIO: Esteira de Produtos FNW (Melhoria Visual da Jornada) -->
+        <div class="jornada-container">
+
+            <!-- LTi -->
+            <div class="product-column-wrapper">
+                <div class="product-column">
+                    <div class="column-header">
+                        <h4>LTi</h4>
+                        <h5>Low Ticket</h5>
+                        <small>(&lt; R$ 500)</small>
+                    </div>
+                    <div class="product-list" id="lti-list">
+                        <!-- Cards de produto são inseridos aqui via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seta visual da jornada -->
+            <div class="arrow-icon-wrapper"><div class="arrow-icon">→</div></div>
+
+            <!-- MTi -->
+            <div class="product-column-wrapper">
+                <div class="product-column">
+                    <div class="column-header">
+                        <h4>MTi</h4>
+                        <h5>Mid Ticket</h5>
+                        <small>(R$ 500 - R$ 3.000)</small>
+                    </div>
+                    <div class="product-list" id="mti-list">
+                        <!-- Cards de produto são inseridos aqui via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seta visual da jornada -->
+            <div class="arrow-icon-wrapper"><div class="arrow-icon">→</div></div>
+
+            <!-- HTi -->
+            <div class="product-column-wrapper">
+                <div class="product-column">
+                    <div class="column-header">
+                        <h4>HTi 
+                            <!-- Tooltip estratégico (Pilar 3) -->
+                            <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="Pilar 3: A Oferta Premium. Como esta mentoria ou serviço escala seu lucro e compra sua liberdade?"></i>
+                        </h4>
+                        <h5>High Ticket</h5>
+                        <small>(R$ 3.000 - R$ 25.000)</small>
+                    </div>
+                    <div class="product-list" id="hti-list">
+                        <!-- Cards de produto são inseridos aqui via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seta visual da jornada -->
+            <div class="arrow-icon-wrapper"><div class="arrow-icon">→</div></div>
+
+            <!-- DUN -->
+            <div class="product-column-wrapper">
+                <div class="product-column">
+                    <div class="column-header">
+                        <h4>DUN
+                            <!-- Tooltip estratégico (Pilar 3) -->
+                            <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="Pilar 3 (Máximo): O 'Done For You' ou serviço de altíssimo valor que representa o maior lucro."></i>
+                        </h4>
+                        <h5>DUN</h5>
+                        <small>(&gt; R$ 25.000)</small>
+                    </div>
+                    <div class="product-list" id="dun-list">
+                        <!-- Cards de produto são inseridos aqui via JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FIM: Esteira de Produtos FNW -->
+    </div>
+
+    <!-- Modal: Cadastrar/Editar Produto (Com Melhorias) -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Cadastrar Novo Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="productId">
+                    <div class="mb-3">
+                        <label for="productTitle" class="form-label">Título do Produto</label>
+                        <input type="text" class="form-control" id="productTitle">
+                    </div>
+                    <div class="mb-3">
+                        <label for="productPrice" class="form-label">Preço Sugerido (R$)</label>
+                        <input type="number" class="form-control" id="productPrice" placeholder="Ex: 49.90">
+                        <div class="form-text">O sistema irá posicionar o produto automaticamente.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productDescription" class="form-label">Descrição Breve</label>
+                        <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                    </div>
                     
-                    <!-- Estágio LTi --><div class="flex flex-col items-center">
-                        <div class="timeline-point">LTi</div>
-                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">Low Ticket</h3>
-                        <p class="text-xs text-gray-400 text-center mb-4">(&lt; R$ 500)</p>
-                        <div id="lti-container" class="w-full space-y-3 min-h-[100px]">
-                            <!-- Cards de produto LTi aqui --></div>
+                    <!-- INÍCIO: Melhoria Pilar 1: Mapa do Tesouro -->
+                    <div class="form-check form-switch mb-3" id="mapa-tesouro-toggle">
+                        <input class="form-check-input" type="checkbox" role="switch" id="isMapaTesouro">
+                        <label class="form-check-label" for="isMapaTesouro">
+                            <strong>Marcar como "Mapa do Tesouro"</strong>
+                            <small class="d-block text-muted">(O "sim fácil" que transforma curiosos em clientes)</small>
+                        </label>
                     </div>
+                    <!-- FIM: Melhoria Pilar 1 -->
 
-                    <!-- Estágio MTi --><div class="flex flex-col items-center">
-                        <div class="timeline-point">MTi</div>
-                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">Mid Ticket</h3>
-                        <p class="text-xs text-gray-400 text-center mb-4">(R$ 500 - R$ 3.000)</p>
-                        <div id="mti-container" class="w-full space-y-3 min-h-[100px]">
-                            <!-- Cards de produto MTi aqui --></div>
-                    </div>
-
-                    <!-- Estágio HTi --><div class="flex flex-col items-center">
-                        <div class="timeline-point">HTi</div>
-                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">High Ticket</h3>
-                        <p class="text-xs text-gray-400 text-center mb-4">(R$ 3.000 - R$ 25.000)</p>
-                        <div id="hti-container" class="w-full space-y-3 min-h-[100px]">
-                            <!-- Cards de produto HTi aqui --></div>
-                    </div>
-
-                    <!-- Estágio DUN --><div class="flex flex-col items-center">
-                        <div class="timeline-point">DUN</div>
-                        <h3 class="text-xl font-bold text-indigo-300 mt-4 mb-2 text-center">DUN</h3>
-                        <p class="text-xs text-gray-400 text-center mb-4">(&gt; R$ 25.000)</p>
-                        <div id="dun-container" class="w-full space-y-3 min-h-[100px]">
-                            <!-- Cards de produto DUN aqui --></div>
-                    </div>
-
+                </div>
+                <div class="modal-footer">
+                    <!-- Botão deletar movido para a esquerda para clareza -->
+                    <button type="button" class="btn btn-outline-danger" id="btn-delete" style="display: none; margin-right: auto;">Deletar Produto</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save">Salvar Produto</button>
                 </div>
             </div>
-        </section>
-
-    </div> <!-- Fim do Max-width container -->
-
-    <!-- Modal: Cadastrar Produto --><div id="cadastroModal" class="modal">
-        <div class="modal-content bg-gray-800 w-full max-w-lg p-6 rounded-lg shadow-2xl border border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold text-white">Cadastrar Novo Produto</h3>
-                <button class="close-modal text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+    </div>
+    
+    <!-- Modal: Detalhes e Conexão (Melhoria Pilar 2) -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailProductTitle">Detalhe do Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row gy-3">
+                        <!-- Coluna de Detalhes -->
+                        <div class="col-md-7">
+                            <h3 id="detailTitle"></h3>
+                            <h4 class="text-success" id="detailPrice"></h4>
+                            <!-- white-space: pre-wrap preserva a formatação da descrição (quebras de linha) -->
+                            <p id="detailDescription" style="white-space: pre-wrap;"></p>
+                        </div>
+                        <!-- INÍCIO: Melhoria Pilar 2: Máquina de Próxima Venda -->
+                        <div class="col-md-5">
+                            <div class="card bg-light p-3">
+                                <h5><i class="bi bi-diagram-3-fill"></i> Máquina de Próxima Venda</h5>
+                                <p class="text-muted small">Para qual produto esta oferta deve levar o cliente?</p>
+                                <div class="mb-3">
+                                    <label for="link-proxima-venda" class="form-label">Conectar com:</label>
+                                    <select class="form-select" id="link-proxima-venda">
+                                        <option value="">Nenhuma (Fim da esteira)</option>
+                                        <!-- Opções carregadas via JS -->
+                                    </select>
+                                </div>
+                                <p class="text-muted small">Isto constrói seu sistema automático que oferece a "coisa certa, na hora certa".</p>
+                            </div>
+                        </div>
+                        <!-- FIM: Melhoria Pilar 2 -->
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" id="btn-edit-product">
+                        <i class="bi bi-pencil-fill"></i> Editar Produto
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+                </div>
             </div>
-            <form id="cadastro-form">
-                <div class="mb-4">
-                    <label for="produto-titulo" class="block text-sm font-medium text-gray-300 mb-1">Título do Produto</label>
-                    <input type="text" id="produto-titulo" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="produto-preco" class="block text-sm font-medium text-gray-300 mb-1">Preço Sugerido (R$)</label>
-                    <input type="number" id="produto-preco" min="0" step="0.01" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: 497.00" required>
-                     <p class="text-xs text-gray-400 mt-1">O sistema irá posicionar o produto automaticamente com base no preço.</p>
-                </div>
-                <div class="mb-6">
-                    <label for="produto-desc" class="block text-sm font-medium text-gray-300 mb-1">Descrição Breve</label>
-                    <textarea id="produto-desc" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Encontros quinzenais em grupo com os sócios..."></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" class="close-modal bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg mr-3 transition duration-200">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
-                        Salvar Produto
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
 
-    <!-- Modal: Detalhes do Produto (para navegação) --><div id="detalheModal" class="modal">
-        <div class="modal-content bg-gray-800 w-full max-w-lg p-6 rounded-lg shadow-2xl border border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="detalhe-stage" class="text-xl font-semibold text-indigo-400">Detalhe do Produto</h3>
-                <button class="close-modal text-gray-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            
-            <!-- Conteúdo do Detalhe --><div class="min-h-[150px]">
-                <h2 id="detalhe-titulo" class="text-2xl font-bold text-white mb-2"></h2>
-                <p id="detalhe-preco" class="text-lg font-semibold text-indigo-300 mb-4"></p>
-                <p id="detalhe-desc" class="text-gray-300"></p>
-            </div>
-
-            <!-- Navegação do Modal (Timeline) --><div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-700">
-                <button id="nav-prev" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    &larr; Anterior
-                </button>
-                <span id="nav-counter" class="text-sm text-gray-400"></span>
-                <button id="nav-next" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Próximo &rarr;
-                </button>
-            </div>
-
-            <!-- Ações (Mover / Deletar) --><div class="mt-6 pt-4 border-t border-gray-700">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Mover produto para:</label>
-                <div id="detalhe-move-buttons" class="grid grid-cols-2 gap-3 mb-4">
-                    <button data-stage="lti" class="move-btn-modal text-sm bg-green-600 hover:bg-green-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">LTi</button>
-                    <button data-stage="mti" class="move-btn-modal text-sm bg-blue-600 hover:bg-blue-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">MTi</button>
-                    <button data-stage="hti" class="move-btn-modal text-sm bg-purple-600 hover:bg-purple-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">HTi</button>
-                    <button data-stage="dun" class="move-btn-modal text-sm bg-red-600 hover:bg-red-500 py-2 px-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">DUN</button>
-                </div>
-                
-                <button id="detalhe-delete-btn" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
-                    Deletar Produto
-                </button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- INÍCIO: App JS Customizado (incorporado) -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- Estado da Aplicação ---
-            let state = {
-                clientName: "Digite o cliente", // Nome do cliente
-                produtos: {
-                    lti: [
-                        { id: 1, titulo: 'Comunidade (Exemplo)', desc: 'Acesso à comunidade e aulas semanais.', preco: 497 }
-                    ],
-                    mti: [
-                        { id: 2, titulo: 'Curso Gravado (Exemplo)', desc: 'Curso completo gravado com método.', preco: 1997 }
-                    ],
-                    hti: [
-                        { id: 3, titulo: 'Mentoria em Grupo (Exemplo)', desc: 'Encontros quinzenais com sócios.', preco: 15000 }
-                    ],
-                    dun: []
-                },
-                modal: {
-                    current: null, // 'cadastro', 'detalhe'
-                    data: {} // { id, stage, index }
-                }
-            };
+            let products = [];
+            let currentEditingProductId = null;
+            const clientNameInput = document.getElementById('clientName');
 
-            // --- Seletores de DOM ---
-            const cadastroModal = document.getElementById('cadastroModal');
-            const detalheModal = document.getElementById('detalheModal');
-            const openCadastroModalBtn = document.getElementById('openCadastroModal');
-            const closeButtons = document.querySelectorAll('.close-modal');
-            const cadastroForm = document.getElementById('cadastro-form');
-            const exportBtn = document.getElementById('export-json');
+            // Inicialização dos Modais do Bootstrap
+            const productModalEl = document.getElementById('productModal');
+            const productModal = new bootstrap.Modal(productModalEl);
+            
+            const detailModalEl = document.getElementById('detailModal');
+            const detailModal = new bootstrap.Modal(detailModalEl);
+
+            // Inicialização dos Tooltips (Melhoria Pilar 3)
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // --- Elementos do DOM ---
+            const btnSave = document.getElementById('btn-save');
+            const btnDelete = document.getElementById('btn-delete');
+            const btnExport = document.getElementById('btn-exportar');
+            const btnEditProduct = document.getElementById('btn-edit-product');
             const importInput = document.getElementById('import-json');
-            const clientNameInput = document.getElementById('client-name'); // NOVO
+            const linkProximaVendaSelect = document.getElementById('link-proxima-venda');
 
-            // --- Funções de Renderização ---
+            // --- Funções Principais ---
 
-            /** Renderiza os cards de produto na Esteira (Timeline) */
-            function renderEsteira() {
-                // Limpa todos os containers
-                ['lti', 'mti', 'hti', 'dun'].forEach(stage => {
-                    const container = document.getElementById(`${stage}-container`);
-                    container.innerHTML = '';
-                    
-                    if (state.produtos[stage].length === 0) {
-                         container.innerHTML = `<p class="text-gray-600 italic text-sm text-center mt-4">Vazio</p>`;
-                    }
-                    
-                    // Adiciona cards
-                    state.produtos[stage].forEach((item, index) => {
-                        const card = document.createElement('div');
-                        card.className = 'product-card bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 hover:border-indigo-500';
-                        card.setAttribute('data-stage', stage);
-                        card.setAttribute('data-index', index);
-                        card.setAttribute('data-id', item.id);
-                        card.innerHTML = `
-                            <h4 class="font-semibold text-white text-sm truncate">${item.titulo}</h4>
-                            <p class="text-xs text-indigo-300 font-medium mt-1">R$ ${Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                        `;
-                        container.appendChild(card);
-                    });
+            /**
+             * Renderiza todos os produtos nas colunas corretas e atualiza o dashboard.
+             * Esta é a função central que atualiza a UI.
+             */
+            function renderApp() {
+                // Limpa as listas antes de renderizar
+                document.getElementById('lti-list').innerHTML = '';
+                document.getElementById('mti-list').innerHTML = '';
+                document.getElementById('hti-list').innerHTML = '';
+                document.getElementById('dun-list').innerHTML = '';
+
+                // Cria e insere o card de cada produto na coluna correta
+                products.forEach(product => {
+                    const productCard = createProductCard(product);
+                    const columnId = getColumnForPrice(product.price);
+                    document.getElementById(columnId).appendChild(productCard);
                 });
+
+                // Atualiza o dashboard de controle
+                updateDashboard();
             }
 
-            /** Renderiza tudo */
-            function renderAll() {
-                renderEsteira();
-            }
-
-            // --- Funções de Posicionamento ---
-            
-            /** Decide em qual esteira o produto entra com base no preço */
-            function autoPosicionar(item) {
-                const preco = Number(item.preco);
-                if (preco < 500) {
-                    state.produtos.lti.push(item);
-                } else if (preco < 3000) {
-                    state.produtos.mti.push(item);
-                } else if (preco < 25000) {
-                    state.produtos.hti.push(item);
-                } else {
-                    state.produtos.dun.push(item);
-                }
-            }
-            
-            /** Move um item de uma esteira para outra */
-            function moverProduto(newStage) {
-                const { id, stage: oldStage } = state.modal.data;
+            /**
+             * Cria o elemento HTML (card) para um produto.
+             * Esta função contém as melhorias visuais dos Pilares 1 e 2.
+             */
+            function createProductCard(product) {
+                const card = document.createElement('div');
+                card.className = 'product-card shadow-sm';
+                card.dataset.id = product.id;
                 
-                // Encontra o item
-                const itemIndex = state.produtos[oldStage].findIndex(item => item.id === id);
-                if (itemIndex > -1) {
-                    // Remove do array antigo
-                    const [itemMovido] = state.produtos[oldStage].splice(itemIndex, 1);
-                    
-                    // Adiciona ao novo array
-                    state.produtos[newStage].push(itemMovido);
-                    
-                    renderEsteira();
-                    closeModal();
+                // Melhoria Pilar 1: Adiciona destaque "Mapa do Tesouro"
+                let mapaTesouroBadge = '';
+                if (product.isMapaTesouro) {
+                    card.classList.add('mapa-tesouro');
+                    mapaTesouroBadge = '<div class="mapa-tesouro-badge"><i class="bi bi-key-fill"></i> Mapa do Tesouro</div>';
                 }
-            }
-            
-             /** Deleta um item */
-            function deletarProduto() {
-                const { id, stage } = state.modal.data;
-                 // Encontra o item
-                const itemIndex = state.produtos[stage].findIndex(item => item.id === id);
-                if (itemIndex > -1) {
-                    state.produtos[stage].splice(itemIndex, 1);
-                    renderEsteira();
-                    closeModal();
+
+                // Melhoria Pilar 2: Adiciona info "Próxima Venda"
+                let proximaVendaInfo = '';
+                if (product.proximaVendaId) {
+                    const nextProduct = products.find(p => p.id === product.proximaVendaId);
+                    if (nextProduct) {
+                        proximaVendaInfo = `
+                            <div class="proxima-venda-info">
+                                <i class="bi bi-arrow-right-circle"></i> Leva para: <strong>${nextProduct.title}</strong>
+                            </div>
+                        `;
+                    }
                 }
+
+                // Conteúdo do card
+                card.innerHTML = `
+                    ${mapaTesouroBadge}
+                    <h6>${product.title}</h6>
+                    <div class="price">R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    ${proximaVendaInfo}
+                `;
+
+                // Adiciona evento de clique para abrir o modal de detalhes
+                card.addEventListener('click', () => {
+                    currentEditingProductId = product.id;
+                    openDetailModal(product.id);
+                });
+
+                return card;
             }
 
-            // --- Funções de Modal ---
+            /**
+             * Salva um produto (novo ou editado).
+             */
+            function saveProduct() {
+                const id = document.getElementById('productId').value;
+                const title = document.getElementById('productTitle').value;
+                // Trata vírgula (,) e ponto (.) no preço
+                const price = parseFloat(document.getElementById('productPrice').value.replace(',', '.')); 
+                const description = document.getElementById('productDescription').value;
+                const isMapaTesouro = document.getElementById('isMapaTesouro').checked;
 
-            function openModal(modalId) {
-                if (modalId === 'cadastro') {
-                    state.modal.current = 'cadastro';
-                    cadastroModal.style.display = 'flex';
-                } else if (modalId === 'detalhe') {
-                    state.modal.current = 'detalhe';
-                    updateDetalheModal();
-                    detalheModal.style.display = 'flex';
-                }
-            }
-
-            function closeModal() {
-                state.modal.current = null;
-                state.modal.data = {};
-                cadastroModal.style.display = 'none';
-                detalheModal.style.display = 'none';
-                cadastroForm.reset();
-            }
-            
-            /** Atualiza o conteúdo do modal de detalhe com base no state.modal.data */
-            function updateDetalheModal() {
-                const { stage, index } = state.modal.data;
-                const produto = state.produtos[stage][index];
-                
-                if (!produto) {
-                    closeModal();
+                if (!title || isNaN(price) || price <= 0) {
+                    // Feedback de erro (sem usar alert)
+                    console.error('Título e Preço (válido) são obrigatórios.');
+                    // Aqui seria um bom lugar para mostrar uma mensagem de erro no modal
                     return;
                 }
-                
-                // Atualiza ID no state para mover/deletar
-                state.modal.data.id = produto.id;
 
-                document.getElementById('detalhe-stage').textContent = `Produto ${stage.toUpperCase()}`;
-                document.getElementById('detalhe-titulo').textContent = produto.titulo;
-                document.getElementById('detalhe-preco').textContent = `R$ ${Number(produto.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                document.getElementById('detalhe-desc').textContent = produto.desc;
+                if (id) {
+                    // Editando um produto existente
+                    const product = products.find(p => p.id === id);
+                    product.title = title;
+                    product.price = price;
+                    product.description = description;
+                    // Só permite marcar como Mapa do Tesouro se for LTi
+                    product.isMapaTesouro = (getColumnForPrice(price) === 'lti-list') ? isMapaTesouro : false;
+                } else {
+                    // Criando um novo produto
+                    const newProduct = {
+                        id: fnw_${Date.now()}, // ID único
+                        title,
+                        price,
+                        description,
+                        // Só permite marcar como Mapa do Tesouro se for LTi
+                        isMapaTesouro: (getColumnForPrice(price) === 'lti-list') ? isMapaTesouro : false,
+                        proximaVendaId: null // Melhoria Pilar 2: Inicia sem conexão
+                    };
+                    products.push(newProduct);
+                }
+
+                renderApp(); // Atualiza a UI
+                productModal.hide(); // Fecha o modal
+            }
+
+            /**
+             * Deleta um produto.
+             */
+            function deleteProduct() {
+                if (!currentEditingProductId) return;
+
+                // Em vez de window.confirm(), apenas deletamos.
+                // Um modal de confirmação seria o ideal.
+                products = products.filter(p => p.id !== currentEditingProductId);
                 
-                // Navegação
-                const total = state.produtos[stage].length;
-                document.getElementById('nav-counter').textContent = `${index + 1} / ${total}`;
-                document.getElementById('nav-prev').disabled = (index === 0);
-                document.getElementById('nav-next').disabled = (index === total - 1);
-                
-                // Botões de Mover
-                document.querySelectorAll('.move-btn-modal').forEach(btn => {
-                    btn.disabled = (btn.dataset.stage === stage);
+                // Remove conexões quebradas (que apontavam para este produto deletado)
+                products.forEach(p => {
+                    if (p.proximaVendaId === currentEditingProductId) {
+                        p.proximaVendaId = null;
+                    }
                 });
+                
+                currentEditingProductId = null;
+                renderApp(); // Atualiza a UI
+                productModal.hide(); // Fecha o modal
             }
 
-            // --- Handlers de Eventos ---
+            /**
+             * Abre o modal de "Cadastrar Produto", limpando ou preenchendo os campos.
+             */
+            function resetProductModal(product = null) {
+                currentEditingProductId = product ? product.id : null;
+                document.getElementById('productId').value = product ? product.id : '';
+                document.getElementById('productTitle').value = product ? product.title : '';
+                document.getElementById('productPrice').value = product ? product.price : '';
+                document.getElementById('productDescription').value = product ? product.description : '';
+                document.getElementById('isMapaTesouro').checked = product ? product.isMapaTesouro : false;
 
-            /** Abre modal de cadastro */
-            openCadastroModalBtn.addEventListener('click', () => openModal('cadastro'));
+                document.getElementById('productModalLabel').textContent = product ? 'Editar Produto' : 'Cadastrar Novo Produto';
+                btnDelete.style.display = product ? 'block' : 'none';
 
-            /** Fecha modais */
-            closeButtons.forEach(btn => btn.addEventListener('click', closeModal));
-            window.addEventListener('click', (e) => {
-                if (e.target === cadastroModal || e.target === detalheModal) {
-                    closeModal();
-                }
-            });
-
-            /** Salva novo produto */
-            cadastroForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const titulo = document.getElementById('produto-titulo').value;
-                const desc = document.getElementById('produto-desc').value;
-                const preco = document.getElementById('produto-preco').value;
+                // Lógica para mostrar/ocultar o toggle "Mapa do Tesouro"
+                const price = parseFloat(product ? product.price : 0);
+                const column = getColumnForPrice(price);
+                const toggle = document.getElementById('mapa-tesouro-toggle');
                 
-                const novoItem = {
-                    id: Date.now(), // ID único simples
-                    titulo,
-                    desc,
-                    preco: parseFloat(preco)
-                };
+                if (product && column !== 'lti-list') {
+                    toggle.style.display = 'none';
+                    document.getElementById('isMapaTesouro').checked = false; // Garante que não fique marcado
+                } else {
+                    toggle.style.display = 'block';
+                }
+            }
+            
+            /**
+             * Abre o modal de "Detalhes" e preenche as conexões (Pilar 2).
+             */
+            function openDetailModal(productId) {
+                const product = products.find(p => p.id === productId);
+                if (!product) return;
+
+                currentEditingProductId = productId;
+
+                // Preenche os detalhes básicos
+                document.getElementById('detailTitle').textContent = product.title;
+                document.getElementById('detailPrice').textContent = R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })};
+                document.getElementById('detailDescription').textContent = product.description;
+
+                // Melhoria Pilar 2: Popula o Dropdown de "Próxima Venda"
+                linkProximaVendaSelect.innerHTML = '<option value="">Nenhuma (Fim da esteira)</option>';
+                products.forEach(p => {
+                    if (p.id !== product.id) { // Não pode linkar para si mesmo
+                        const option = document.createElement('option');
+                        option.value = p.id;
+                        option.textContent = ${p.title} (R$ ${p.price});
+                        if (p.id === product.proximaVendaId) {
+                            option.selected = true; // Marca a conexão existente
+                        }
+                        linkProximaVendaSelect.appendChild(option);
+                    }
+                });
+
+                detailModal.show();
+            }
+            
+            /**
+             * Salva a conexão da "Próxima Venda" (Pilar 2) quando o select é alterado.
+             */
+            function saveProximaVendaLink() {
+                const selectedId = linkProximaVendaSelect.value;
+                const product = products.find(p => p.id === currentEditingProductId);
+                if (product) {
+                    product.proximaVendaId = selectedId || null;
+                    renderApp(); // Atualiza a UI para mostrar a nova conexão
+                }
+            }
+
+            /**
+             * Atualiza o "Dashboard de Controle" (Melhoria 4) com o status atual.
+             */
+            function updateDashboard() {
+                const numProdutos = products.length;
+                const numConexoes = products.filter(p => p.proximaVendaId).length;
+
+                document.getElementById('contador-produtos').textContent = numProdutos;
+                document.getElementById('contador-conexoes').textContent = numConexoes;
+
+                const statusSpan = document.getElementById('status-previsibilidade');
                 
-                autoPosicionar(novoItem);
-                renderEsteira();
-                closeModal();
-            });
+                // Lógica de status
+                if (numProdutos === 0) {
+                    statusSpan.textContent = 'Caótico';
+                    statusSpan.className = 'badge status-caotico';
+                } else if (numConexoes < numProdutos / 2) {
+                    statusSpan.textContent = 'Em Construção';
+                    statusSpan.className = 'badge status-construindo';
+                } else {
+                    statusSpan.textContent = 'Previsível';
+                    statusSpan.className = 'badge status-previsivel';
+                }
+            }
 
-            /** Delegação de eventos para abrir "Detalhe" do Produto */
-            document.body.addEventListener('click', (e) => {
-                const card = e.target.closest('.product-card');
-                if (card) {
-                    const stage = card.dataset.stage;
-                    const index = parseInt(card.dataset.index);
-                    
-                    state.modal.data = { stage, index };
-                    openModal('detalhe');
-                }
-            });
-            
-            /** Handlers da navegação do modal de detalhe */
-            document.getElementById('nav-prev').addEventListener('click', () => {
-                if (state.modal.data.index > 0) {
-                    state.modal.data.index--;
-                    updateDetalheModal();
-                }
-            });
-            
-            document.getElementById('nav-next').addEventListener('click', () => {
-                const { stage, index } = state.modal.data;
-                if (index < state.produtos[stage].length - 1) {
-                    state.modal.data.index++;
-                    updateDetalheModal();
-                }
-            });
-            
-            /** Handlers de mover e deletar no modal de detalhe */
-            document.getElementById('detalhe-move-buttons').addEventListener('click', (e) => {
-                if (e.target.classList.contains('move-btn-modal')) {
-                    const newStage = e.target.dataset.stage;
-                    moverProduto(newStage);
-                }
-            });
-            
-            document.getElementById('detalhe-delete-btn').addEventListener('click', deletarProduto);
+            // --- Funções Auxiliares ---
 
-            // NOVO: Atualiza o nome do cliente no state
-            clientNameInput.addEventListener('input', (e) => {
-                state.clientName = e.target.value;
-            });
+            /**
+             * Retorna o ID da coluna (lista) com base no preço.
+             */
+            function getColumnForPrice(price) {
+                if (price < 500) return 'lti-list';
+                if (price >= 500 && price < 3000) return 'mti-list';
+                if (price >= 3000 && price < 25000) return 'hti-list';
+                if (price >= 25000) return 'dun-list';
+                return 'lti-list'; // Default para preços 0 ou inválidos
+            }
 
-            // --- Funções de Import/Export ---
-            
-            /** Exporta o state.produtos para JSON */
+            // --- Funções de Import/Export (JSON) ---
+
+            /**
+             * Exporta o estado atual (produtos e nome do cliente) como um arquivo JSON.
+             */
             function exportJSON() {
-                // Formata o nome do cliente para ser seguro para arquivos
-                const saneClientName = state.clientName
-                    .trim()
-                    .replace(/\s+/g, '-') // troca espaços por hífens
-                    .replace(/[^a-zA-Z0-9-]/g, ''); // remove caracteres especiais
-
-                const defaultFilename = `esteira-${saneClientName || 'cliente'}.json`;
-
-                const filename = prompt("Salvar como:", defaultFilename);
-                if (!filename) return;
-
-                // Cria um objeto de exportação que inclui o nome do cliente e os produtos
-                const exportData = {
-                    clientName: state.clientName,
-                    produtos: state.produtos
+                const clientName = clientNameInput.value.trim().replace(/\s+/g, '_') || 'meu-mapa';
+                const data = {
+                    clientName: clientNameInput.value.trim(),
+                    products: products
                 };
-
-                const data = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = filename.endsWith('.json') ? filename : `${filename}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", mapa_previsibilidade_${clientName}.json);
+                document.body.appendChild(downloadAnchorNode); // Necessário para Firefox
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
             }
-            
-            /** Importa um JSON e atualiza o state.produtos */
+
+            /**
+             * Importa um estado (arquivo JSON) e renderiza a aplicação.
+             */
             function importJSON(event) {
                 const file = event.target.files[0];
                 if (!file) return;
-                
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
-                        const importedState = JSON.parse(e.target.result);
-                        
-                        // Validação: Checa se é o novo formato (com clientName e produtos)
-                        if (importedState.produtos && importedState.produtos.lti) {
-                            state.produtos = importedState.produtos;
-                            state.clientName = importedState.clientName || "Cliente Importado";
-                            clientNameInput.value = state.clientName; // Atualiza o input
-                            renderAll();
-                        } 
-                        // Validação: Checa se é o formato antigo (só produtos)
-                        else if (importedState.lti && importedState.mti) {
-                            state.produtos = importedState; // Carrega só produtos
-                            state.clientName = "Cliente (Formato Antigo)"; // Seta um default
-                            clientNameInput.value = state.clientName; // Atualiza o input
-                            renderAll();
+                        const data = JSON.parse(e.target.result);
+                        if (data.products && Array.isArray(data.products)) {
+                            products = data.products;
+                            clientNameInput.value = data.clientName || '';
+                            renderApp();
                         } else {
-                            console.error("Erro: Arquivo JSON inválido. Estrutura não reconhecida.");
-                            // Idealmente, mostraríamos um erro na UI
+                            console.error('Arquivo JSON inválido: falta a propriedade "products".');
                         }
-                    } catch (err) {
-                        console.error("Erro ao processar arquivo JSON:", err);
-                        // Idealmente, mostraríamos um erro na UI
+                    } catch (error) {
+                        console.error('Erro ao ler o arquivo JSON:', error);
                     }
                 };
                 reader.readAsText(file);
-                // Reseta o input para permitir carregar o mesmo arquivo novamente
-                event.target.value = null;
+                // Limpa o input para permitir carregar o mesmo arquivo novamente
+                event.target.value = null; 
             }
+
+            // --- Event Listeners (Configuração Inicial) ---
+
+            // Abre o modal de "Novo Produto"
+            productModalEl.addEventListener('show.bs.modal', (event) => {
+                // Reseta o modal APENAS se não foi acionado pelo botão "Editar"
+                if (event.relatedTarget && event.relatedTarget.id !== 'btn-edit-product') {
+                    resetProductModal();
+                }
+            });
             
-            exportBtn.addEventListener('click', exportJSON);
+            // Validação em tempo real do "Mapa do Tesouro" ao digitar o preço
+            document.getElementById('productPrice').addEventListener('input', (e) => {
+                const price = parseFloat(e.target.value.replace(',', '.')) || 0;
+                const column = getColumnForPrice(price);
+                const toggle = document.getElementById('mapa-tesouro-toggle');
+                
+                if (column !== 'lti-list') {
+                    toggle.style.display = 'none';
+                    document.getElementById('isMapaTesouro').checked = false; // Desmarca se mudar de LTi
+                } else {
+                    toggle.style.display = 'block';
+                }
+            });
+
+            // Botão Salvar
+            btnSave.addEventListener('click', saveProduct);
+
+            // Botão Deletar
+            btnDelete.addEventListener('click', deleteProduct);
+
+            // Botão Exportar
+            btnExport.addEventListener('click', exportJSON);
+
+            // Input de Importar
             importInput.addEventListener('change', importJSON);
 
-            // --- Inicialização ---
-            clientNameInput.value = state.clientName; // NOVO: Seta o valor inicial
-            renderAll();
-            lucide.createIcons(); // Ativa os ícones
+            // Botão "Editar Produto" (dentro do modal de detalhes)
+            btnEditProduct.addEventListener('click', () => {
+                const product = products.find(p => p.id === currentEditingProductId);
+                if (product) {
+                    detailModal.hide(); // Fecha modal de detalhes
+                    resetProductModal(product); // Preenche modal de edição
+                    productModal.show(); // Abre modal de edição
+                }
+            });
+            
+            // Salva a conexão (Pilar 2)
+            linkProximaVendaSelect.addEventListener('change', saveProximaVendaLink);
+
+            // Renderização inicial
+            renderApp();
         });
     </script>
+    <!-- FIM: App JS Customizado -->
 </body>
 </html>
